@@ -1,0 +1,6 @@
+@PMSIMSWebApi_HostAddress = http://localhost:5190
+
+GET {{PMSIMSWebApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

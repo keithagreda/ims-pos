@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35208.52
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "POSIMSWebApi", "POSIMSWebApi\POSIMSWebApi.csproj", "{438E1F1C-A586-4F40-8E81-0A3478B273B0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "POSIMSWebApi.Tests", "POSIMSWebApi.Tests\POSIMSWebApi.Tests.csproj", "{B858D505-FB61-4AE0-B0C3-54652DC7FC19}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{438E1F1C-A586-4F40-8E81-0A3478B273B0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{438E1F1C-A586-4F40-8E81-0A3478B273B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{438E1F1C-A586-4F40-8E81-0A3478B273B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{438E1F1C-A586-4F40-8E81-0A3478B273B0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B858D505-FB61-4AE0-B0C3-54652DC7FC19}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B858D505-FB61-4AE0-B0C3-54652DC7FC19}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B858D505-FB61-4AE0-B0C3-54652DC7FC19}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B858D505-FB61-4AE0-B0C3-54652DC7FC19}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {304013D9-AEA3-41F2-AC05-AAEDBC35AAFA}
+	EndGlobalSection
+EndGlobal
