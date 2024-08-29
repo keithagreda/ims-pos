@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using POSIMSWebApi.Interfaces;
 
 namespace PMSIMSWebApi.Entities
 {
@@ -6,10 +7,11 @@ namespace PMSIMSWebApi.Entities
     {
         public Guid Id { get; set; }
         public string Name { get; set; }
+
         //nav prop
         public ICollection<Category> Categories { get; set; }
-
     }
+
     public class Category : FullyAudited
     {
         public Guid Id { get; set; }
@@ -17,7 +19,6 @@ namespace PMSIMSWebApi.Entities
 
         //nav prop
         public ICollection<Product> Products { get; set; }
-
     }
 
     public class ProductPrice : FullyAudited
@@ -26,8 +27,8 @@ namespace PMSIMSWebApi.Entities
         public decimal Price { get; set; }
         public DateTime EffectivityDate { get; set; }
         public Guid ProductId { get; set; }
-        [ForeignKey("ProductId")]
 
+        [ForeignKey("ProductId")]
         //nav prop
         public Product ProductFK { get; set; }
     }
@@ -41,13 +42,13 @@ namespace PMSIMSWebApi.Entities
         public decimal Quantity { get; set; }
         public decimal TotalProductSales { get; set; }
         public Guid ProductId { get; set; }
-        [ForeignKey("ProductId")]
 
+        [ForeignKey("ProductId")]
         //nav prop
         public Product ProductFK { get; set; }
     }
 
-    public class FullyAudited
+    public class FullyAudited : ISoftDelete
     {
         public int CreatedBy { get; set; }
         public DateTime CreationTime { get; set; }
@@ -55,6 +56,6 @@ namespace PMSIMSWebApi.Entities
         public DateTime ModifiedTime { get; set; }
         public bool IsDeleted { get; set; }
         public int DeletedBy { get; set; }
+        public DateTimeOffset? DeletedAt { get; set; }
     }
-
 }
