@@ -52,10 +52,10 @@ namespace PMSIMSWebApi.Entities
     {
         public int CreatedBy { get; set; }
         public DateTime CreationTime { get; set; }
-        public int Modifiedby { get; set; }
-        public DateTime ModifiedTime { get; set; }
+        public int? Modifiedby { get; set; }
+        public DateTime? ModifiedTime { get; set; }
         public bool IsDeleted { get; set; }
-        public int DeletedBy { get; set; }
+        public int? DeletedBy { get; set; }
         public DateTimeOffset? DeletedAt { get; set; }
     }
 }

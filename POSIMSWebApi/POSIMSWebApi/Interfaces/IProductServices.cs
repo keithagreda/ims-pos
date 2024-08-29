@@ -1,4 +1,5 @@
 ﻿using POSIMSWebApi.Dtos;
+using POSIMSWebApi.Dtos.Product;
 
 namespace POSIMSWebApi.Interfaces
 {

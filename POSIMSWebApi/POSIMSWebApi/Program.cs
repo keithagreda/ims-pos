@@ -2,6 +2,7 @@ using System.Net;
 using Microsoft.EntityFrameworkCore;
 using PMSIMSWebApi;
 using PMSIMSWebApi.Entities;
+using POSIMSWebApi.Interceptors;
 using POSIMSWebApi.Interfaces;
 using POSIMSWebApi.Services;
 using Serilog;
@@ -21,6 +22,7 @@ builder.Services.AddDbContext<POSIMSDbContext>(options =>
 );
 
 builder.Services.AddScoped<IProductServices, ProductServices>();
+builder.Services.AddScoped<SoftDeleteInterceptor>();
 
 builder.Services.AddControllers();
 
@@ -28,7 +30,6 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddExceptionHandler<AppExceptionHandler>();
-Serilog.Debugging.SelfLog.Enable(msg => Console.WriteLine(msg));
 
 var app = builder.Build();
 

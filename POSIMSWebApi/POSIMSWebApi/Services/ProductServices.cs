@@ -2,6 +2,11 @@
 using Microsoft.EntityFrameworkCore;
 using PMSIMSWebApi.Entities;
 using POSIMSWebApi.Dtos;
+using POSIMSWebApi.Dtos.Category;
+using POSIMSWebApi.Dtos.Product;
+using POSIMSWebApi.Interfaces;
+using POSIMSWebApi.QueryExtensions;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace POSIMSWebApi.Services
 {
@@ -16,14 +21,19 @@ namespace POSIMSWebApi.Services
 
         public async Task<ApiResponse<IList<ProductDto>>> GetAll(FilterText filter)
         {
-            var data = _dbContext.Products.Select(e => new ProductDto
+            var data = _dbContext.Products.Include(e => e.Categories).Select(e => new ProductDto
             {
                 Id = e.Id,
                 Name = e.Name,
+                Categories = e.Categories.Select(c => new CategoryDto
+                {
+                    Id = c.Id,
+                    Name = c.Name
+                }).ToList(),
                 CreationTime = e.CreationTime
-            });
+            }).WhereIf(!string.IsNullOrWhiteSpace(filter.Text), p => p.Name.Contains(filter.Text));
 
-            if (await data.AnyAsync())
+            if (!await data.AnyAsync())
             {
                 return new ApiResponse<IList<ProductDto>>()
                 {
@@ -33,7 +43,7 @@ namespace POSIMSWebApi.Services
                 };
             }
 
-            var pagedSort = data.OrderBy(filter.Sorting ?? "creationtime desc")
+            var pagedSort = data.OrderBy(filter.Sorting ?? "CreationTime desc")
                 .Skip((filter.Page - 1) * filter.ItemsPerPage)
                 .Take(filter.ItemsPerPage);
             var result = await pagedSort.ToListAsync();
@@ -121,8 +131,6 @@ namespace POSIMSWebApi.Services
         {
             if (input.Id is null)
             {
-                //create
-                //return ;
                 return await CreateProduct(input);
             }
             return await EditProduct(input);
@@ -130,37 +138,60 @@ namespace POSIMSWebApi.Services
 
         private async Task<ApiResponse<ProductDto>> CreateProduct(CreateOrEditProductDto input)
         {
-            if (input.Id == Guid.Empty)
+            try
             {
+                if (input.Id == Guid.Empty)
+                {
+                    return new ApiResponse<ProductDto>()
+                    {
+                        Data = new ProductDto(),
+                        IsSuccess = false,
+                        ErrorMessage = "ProductIdIsSetToEmpty"
+                    };
+                }
+
+                // Fetch existing categories from the database
+                var existingCategories = _dbContext.Categories
+                    .Where(c => input.ListOfCategoriesId.Contains(c.Id));
+
+                // Create the new product
+                var product = new Product()
+                {
+                    Id = Guid.NewGuid(),
+                    Name = input.Name,
+                    CreationTime = DateTime.Now,
+                    CreatedBy = 1,
+                    Categories = await existingCategories.ToListAsync(),  // Use existing categories
+                    IsDeleted = false
+                };
+
+                await _dbContext.Products.AddAsync(product);
+                await _dbContext.SaveChangesAsync();
+
+                // Prepare the response
+                return new ApiResponse<ProductDto>()
+                {
+                    Data = new ProductDto()
+                    {
+                        Id = product.Id,  // Use the actual ID of the created product
+                        Name = product.Name,
+                        Categories = await existingCategories.Select(c => new CategoryDto { Id = c.Id, Name = c.Name }).ToListAsync(),
+                        CreationTime = product.CreationTime,
+                    },
+                    IsSuccess = true,
+                    ErrorMessage = ""
+                };
+            }
+            catch (Exception ex)
+            {
+
                 return new ApiResponse<ProductDto>()
                 {
                     Data = new ProductDto(),
                     IsSuccess = false,
-                    ErrorMessage = "ProductIdEmpty"
+                    ErrorMessage = ex.InnerException.Message.ToString()
                 };
             }
-            Product data = new Product()
-            {
-                Id = Guid.NewGuid(),
-                Name = input.Name,
-                Categories = input.Categories,
-                CreationTime = DateTime.Now,
-                CreatedBy = 1 //temporary
-            };
-
-            await _dbContext.Products.AddAsync(data);
-            return new ApiResponse<ProductDto>()
-            {
-                Data = new ProductDto()
-                {
-                    Id = Guid.NewGuid(),
-                    Name = data.Name,
-                    Categories = input.Categories,
-                    CreationTime = data.CreationTime,
-                },
-                IsSuccess = true,
-                ErrorMessage = ""
-            };
         }
 
         private async Task<ApiResponse<ProductDto>> EditProduct(CreateOrEditProductDto input)
@@ -195,6 +226,7 @@ namespace POSIMSWebApi.Services
             };
 
             _dbContext.Products.Update(productToBeEdited);
+            await _dbContext.SaveChangesAsync();
             return new ApiResponse<ProductDto>()
             {
                 Data = data.Data,
