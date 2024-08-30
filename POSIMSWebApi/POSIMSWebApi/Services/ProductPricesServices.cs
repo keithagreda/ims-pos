@@ -4,6 +4,7 @@ using POSIMSWebApi.Dtos;
 using POSIMSWebApi.Dtos.Product;
 using POSIMSWebApi.Dtos.ProductPrices;
 using POSIMSWebApi.QueryExtensions;
+using System.Linq.Dynamic.Core;
 
 namespace POSIMSWebApi.Services
 {
@@ -34,7 +35,36 @@ namespace POSIMSWebApi.Services
                     EffectivityDate = e.EffectivityDate,
                 });
 
-            if (!await data.AnyAsync()) { }
+            if (!await data.AnyAsync()) 
+            {
+                return new ApiResponse<IList<ProductPricesDto>>()
+                {
+                    Data = new List<ProductPricesDto>(),
+                    IsSuccess = false,
+                    ErrorMessage = "ProductPricesNotFound"
+                };
+            }
+
+            var pagedSort = await data.OrderBy(input.Sorting ?? "CreationTime desc")
+                .Skip((input.Page - 1) * input.ItemsPerPage)
+                .Take(input.ItemsPerPage).ToListAsync();
+
+            return new ApiResponse<IList<ProductPricesDto>>()
+            {
+                Data = pagedSort,
+                IsSuccess = true,
+                ErrorMessage = ""
+            };
+        }
+
+        public async Task<ApiResponse<string>> CreateOrEdit(CreateOrEditProductPricesDto input)
+        {
+
+        }
+
+        private async Task<string> CreateProductPrices(CreateOrEditProductPricesDto input)
+        {
+            var data = await _dbContext.ProductPrices.Where(e => e.ProductId == input.ProductId)
         }
     }
 }

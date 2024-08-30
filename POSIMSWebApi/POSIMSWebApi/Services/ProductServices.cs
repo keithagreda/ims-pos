@@ -6,7 +6,6 @@ using POSIMSWebApi.Dtos.Category;
 using POSIMSWebApi.Dtos.Product;
 using POSIMSWebApi.Interfaces;
 using POSIMSWebApi.QueryExtensions;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace POSIMSWebApi.Services
 {
@@ -21,17 +20,21 @@ namespace POSIMSWebApi.Services
 
         public async Task<ApiResponse<IList<ProductDto>>> GetAll(FilterText filter)
         {
-            var data = _dbContext.Products.Include(e => e.Categories).Select(e => new ProductDto
-            {
-                Id = e.Id,
-                Name = e.Name,
-                Categories = e.Categories.Select(c => new CategoryDto
+            var data = _dbContext
+                .Products.Include(e => e.Categories)
+                .Select(e => new ProductDto
                 {
-                    Id = c.Id,
-                    Name = c.Name
-                }).ToList(),
-                CreationTime = e.CreationTime
-            }).WhereIf(!string.IsNullOrWhiteSpace(filter.Text), p => p.Name.Contains(filter.Text));
+                    Id = e.Id,
+                    Name = e.Name,
+                    Categories = e
+                        .Categories.Select(c => new CategoryDto { Id = c.Id, Name = c.Name })
+                        .ToList(),
+                    CreationTime = e.CreationTime
+                })
+                .WhereIf(
+                    !string.IsNullOrWhiteSpace(filter.Text),
+                    p => p.Name.Contains(filter.Text)
+                );
 
             if (!await data.AnyAsync())
             {
@@ -151,8 +154,9 @@ namespace POSIMSWebApi.Services
                 }
 
                 // Fetch existing categories from the database
-                var existingCategories = _dbContext.Categories
-                    .Where(c => input.ListOfCategoriesId.Contains(c.Id));
+                var existingCategories = _dbContext.Categories.Where(c =>
+                    input.ListOfCategoriesId.Contains(c.Id)
+                );
 
                 // Create the new product
                 var product = new Product()
@@ -161,7 +165,7 @@ namespace POSIMSWebApi.Services
                     Name = input.Name,
                     CreationTime = DateTime.Now,
                     CreatedBy = 1,
-                    Categories = await existingCategories.ToListAsync(),  // Use existing categories
+                    Categories = await existingCategories.ToListAsync(), // Use existing categories
                     IsDeleted = false
                 };
 
@@ -173,9 +177,11 @@ namespace POSIMSWebApi.Services
                 {
                     Data = new ProductDto()
                     {
-                        Id = product.Id,  // Use the actual ID of the created product
+                        Id = product.Id, // Use the actual ID of the created product
                         Name = product.Name,
-                        Categories = await existingCategories.Select(c => new CategoryDto { Id = c.Id, Name = c.Name }).ToListAsync(),
+                        Categories = await existingCategories
+                            .Select(c => new CategoryDto { Id = c.Id, Name = c.Name })
+                            .ToListAsync(),
                         CreationTime = product.CreationTime,
                     },
                     IsSuccess = true,
@@ -184,7 +190,6 @@ namespace POSIMSWebApi.Services
             }
             catch (Exception ex)
             {
-
                 return new ApiResponse<ProductDto>()
                 {
                     Data = new ProductDto(),
