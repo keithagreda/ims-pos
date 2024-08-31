@@ -1,14 +1,15 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Linq.Dynamic.Core;
+using Microsoft.EntityFrameworkCore;
 using PMSIMSWebApi.Entities;
 using POSIMSWebApi.Dtos;
 using POSIMSWebApi.Dtos.Product;
 using POSIMSWebApi.Dtos.ProductPrices;
+using POSIMSWebApi.Interfaces;
 using POSIMSWebApi.QueryExtensions;
-using System.Linq.Dynamic.Core;
 
 namespace POSIMSWebApi.Services
 {
-    public class ProductPricesServices
+    public class ProductPricesServices : IProductPricesServices
     {
         private readonly POSIMSDbContext _dbContext;
 
@@ -35,7 +36,7 @@ namespace POSIMSWebApi.Services
                     EffectivityDate = e.EffectivityDate,
                 });
 
-            if (!await data.AnyAsync()) 
+            if (!await data.AnyAsync())
             {
                 return new ApiResponse<IList<ProductPricesDto>>()
                 {
@@ -47,7 +48,8 @@ namespace POSIMSWebApi.Services
 
             var pagedSort = await data.OrderBy(input.Sorting ?? "CreationTime desc")
                 .Skip((input.Page - 1) * input.ItemsPerPage)
-                .Take(input.ItemsPerPage).ToListAsync();
+                .Take(input.ItemsPerPage)
+                .ToListAsync();
 
             return new ApiResponse<IList<ProductPricesDto>>()
             {
@@ -59,12 +61,79 @@ namespace POSIMSWebApi.Services
 
         public async Task<ApiResponse<string>> CreateOrEdit(CreateOrEditProductPricesDto input)
         {
+            if (input.Price <= 0)
+            {
+                return new ApiResponse<string>()
+                {
+                    Data = "Price can't be less than 0",
+                    IsSuccess = false,
+                    ErrorMessage = "Price Validation Error"
+                };
+            }
 
+            if (input.Id is null)
+            {
+                //create
+                return new ApiResponse<string>()
+                {
+                    Data = await CreateProductPrice(input),
+                    IsSuccess = true,
+                    ErrorMessage = ""
+                };
+            }
+
+            //edit
+            var data = await _dbContext.ProductPrices.FirstOrDefaultAsync(e =>
+                e.ProductId == input.ProductId && e.EffectivityDate.Date == DateTime.Now.Date
+            );
+
+            if (data is not null)
+            {
+                return new ApiResponse<string>()
+                {
+                    Data = await EditProductPrice(input, data),
+                    IsSuccess = false,
+                    ErrorMessage = ""
+                };
+            }
+
+            return new ApiResponse<string>()
+            {
+                Data = await CreateProductPrice(input) + " for today.",
+                IsSuccess = true,
+                ErrorMessage = ""
+            };
         }
 
-        private async Task<string> CreateProductPrices(CreateOrEditProductPricesDto input)
+        private async Task<string> CreateProductPrice(CreateOrEditProductPricesDto input)
         {
-            var data = await _dbContext.ProductPrices.Where(e => e.ProductId == input.ProductId)
+            ProductPrice res = new ProductPrice()
+            {
+                Id = Guid.Empty,
+                Price = input.Price,
+                ProductId = input.ProductId,
+                CreatedBy = 1,
+                CreationTime = DateTime.Now,
+                IsDeleted = false
+            };
+
+            await _dbContext.ProductPrices.AddAsync(res);
+            await _dbContext.SaveChangesAsync();
+            return "Successfully added product new price";
+        }
+
+        private async Task<string> EditProductPrice(
+            CreateOrEditProductPricesDto input,
+            ProductPrice data
+        )
+        {
+            data.ProductId = input.ProductId;
+            data.Price = input.Price;
+            data.Modifiedby = 1;
+            data.ModifiedTime = DateTime.Now;
+
+            await _dbContext.SaveChangesAsync();
+            return "Successfully updated product price";
         }
     }
 }

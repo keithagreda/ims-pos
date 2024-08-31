@@ -13,9 +13,8 @@ namespace POSIMSWebApi.Dtos.ProductPrices
 
     public class CreateOrEditProductPricesDto
     {
-        public Guid Id { get; set; }
+        public Guid? Id { get; set; }
         public decimal Price { get; set; }
-        public DateTime EffectivityDate { get; set; }
-        public Guid ProductId { get; set; }
+        public required Guid ProductId { get; set; }
     }
 }

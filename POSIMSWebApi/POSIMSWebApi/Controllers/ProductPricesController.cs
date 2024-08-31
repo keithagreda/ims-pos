@@ -2,37 +2,38 @@
 using Microsoft.AspNetCore.Mvc;
 using POSIMSWebApi.Dtos;
 using POSIMSWebApi.Dtos.Product;
+using POSIMSWebApi.Dtos.ProductPrices;
 using POSIMSWebApi.Interfaces;
 
 namespace POSIMSWebApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ProductController : ControllerBase
+    public class ProductPricesController : ControllerBase
     {
-        private readonly IProductServices _productServices;
+        private readonly IProductPricesServices _productPricesService;
 
-        public ProductController(IProductServices productServices)
+        public ProductPricesController(IProductPricesServices productPricesService)
         {
-            _productServices = productServices;
+            _productPricesService = productPricesService;
         }
 
-        [HttpGet("GetProduct")]
-        public async Task<ActionResult<ApiResponse<IList<ProductDto>>>> GetAllProducts(
+        [HttpGet("GetAllProductPrices")]
+        public async Task<ActionResult<ApiResponse<IList<ProductPricesDto>>>> GetAllProductPrices(
             [FromQuery] FilterText input
         )
         {
             try
             {
-                var result = await _productServices.GetAll(input);
+                var result = await _productPricesService.GetAllProductPrices(input);
                 return Ok(result);
             }
             catch (Exception ex)
             {
                 return BadRequest(
-                    new ApiResponse<IList<ProductDto>>()
+                    new ApiResponse<IList<ProductPricesDto>>()
                     {
-                        Data = new List<ProductDto>(),
+                        Data = new List<ProductPricesDto>(),
                         ErrorMessage = ex.Message,
                         IsSuccess = false
                     }
@@ -40,22 +41,22 @@ namespace POSIMSWebApi.Controllers
             }
         }
 
-        [HttpPost("CreateOrEditProduct")]
-        public async Task<ActionResult<ApiResponse<ProductDto>>> CreateOrEditProduct(
-            [FromQuery] CreateOrEditProductDto input
+        [HttpPost("CreateOrEditProductPrice")]
+        public async Task<ActionResult<ApiResponse<string>>> CreateOrEditProductPrice(
+            [FromQuery] CreateOrEditProductPricesDto input
         )
         {
             try
             {
-                var result = await _productServices.CreateOrEdit(input);
+                var result = await _productPricesService.CreateOrEdit(input);
                 return Ok(result);
             }
             catch (Exception ex)
             {
                 return BadRequest(
-                    new ApiResponse<ProductDto>()
+                    new ApiResponse<string>()
                     {
-                        Data = new ProductDto(),
+                        Data = "",
                         ErrorMessage = ex.Message,
                         IsSuccess = false
                     }

@@ -1,10 +1,13 @@
 ﻿using System.Linq.Dynamic.Core;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using PMSIMSWebApi.Entities;
+using POSIMSWebApi.Auth;
 using POSIMSWebApi.Dtos;
 using POSIMSWebApi.Dtos.Category;
 using POSIMSWebApi.Dtos.Product;
 using POSIMSWebApi.Interfaces;
+using POSIMSWebApi.Mapping;
 using POSIMSWebApi.QueryExtensions;
 
 namespace POSIMSWebApi.Services
@@ -12,10 +15,14 @@ namespace POSIMSWebApi.Services
     public class ProductServices : IProductServices
     {
         private readonly POSIMSDbContext _dbContext;
+        private readonly ProductMapper _productMapper;
+        private readonly UserManager<ApplicationIdentityUser> _userManager;
 
-        public ProductServices(POSIMSDbContext dbContext)
+        public ProductServices(POSIMSDbContext dbContext, ProductMapper productMapper, UserManager<ApplicationIdentityUser> userManager)
         {
             _dbContext = dbContext;
+            _productMapper = productMapper;
+            _userManager = userManager;
         }
 
         public async Task<ApiResponse<IList<ProductDto>>> GetAll(FilterText filter)
@@ -157,14 +164,13 @@ namespace POSIMSWebApi.Services
                 var existingCategories = _dbContext.Categories.Where(c =>
                     input.ListOfCategoriesId.Contains(c.Id)
                 );
-
                 // Create the new product
                 var product = new Product()
                 {
                     Id = Guid.NewGuid(),
                     Name = input.Name,
                     CreationTime = DateTime.Now,
-                    CreatedBy = 1,
+                    CreatedBy = await _userManager.GetUserIdAsync(User)
                     Categories = await existingCategories.ToListAsync(), // Use existing categories
                     IsDeleted = false
                 };
