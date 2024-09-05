@@ -85,7 +85,13 @@ namespace POSIMSWebApi.AuthServices
                 var result = await _userManager.CreateAsync(user, register.Password);
                 if (!result.Succeeded)
                 {
-                    return "Error: Cannot create Admin username/password .. please try again";
+                    var errors = "";
+                    foreach (var error in result.Errors)
+                    {
+                        errors = error.Code + ", " + error.Description;
+                    }
+
+                    return ("Error :" + errors);
                 }
                 if (!await _roleManager.RoleExistsAsync(UserRole.Admin))
                 {
@@ -102,6 +108,15 @@ namespace POSIMSWebApi.AuthServices
                 if (await _roleManager.RoleExistsAsync(UserRole.Admin))
                 {
                     await _userManager.AddToRoleAsync(user, UserRole.Admin);
+                }
+
+                if (await _roleManager.RoleExistsAsync(UserRole.User))
+                {
+                    await _userManager.AddToRoleAsync(user, UserRole.User);
+                }
+                if (await _roleManager.RoleExistsAsync(UserRole.Editor))
+                {
+                    await _userManager.AddToRoleAsync(user, UserRole.Editor);
                 }
                 return "Success!";
             }

@@ -9,11 +9,11 @@ using PMSIMSWebApi.Entities;
 
 #nullable disable
 
-namespace PMSIMSWebApi.Migrations
+namespace POSIMSWebApi.Migrations.POSIMSDb
 {
     [DbContext(typeof(POSIMSDbContext))]
-    [Migration("20240826131136_init")]
-    partial class init
+    [Migration("20240831150810_changes-on-productSales")]
+    partial class changesonproductSales
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -46,23 +46,26 @@ namespace PMSIMSWebApi.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("CreatedBy")
-                        .HasColumnType("int");
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreationTime")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("DeletedBy")
-                        .HasColumnType("int");
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("DeletedBy")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<DateTime>("ModifiedTime")
+                    b.Property<DateTime?>("ModifiedTime")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("Modifiedby")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("Modifiedby")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -79,23 +82,26 @@ namespace PMSIMSWebApi.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("CreatedBy")
-                        .HasColumnType("int");
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreationTime")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("DeletedBy")
-                        .HasColumnType("int");
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("DeletedBy")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<DateTime>("ModifiedTime")
+                    b.Property<DateTime?>("ModifiedTime")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("Modifiedby")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("Modifiedby")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -112,14 +118,17 @@ namespace PMSIMSWebApi.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("CreatedBy")
-                        .HasColumnType("int");
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreationTime")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("DeletedBy")
-                        .HasColumnType("int");
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("DeletedBy")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("EffectivityDate")
                         .HasColumnType("datetime2");
@@ -127,11 +136,11 @@ namespace PMSIMSWebApi.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<DateTime>("ModifiedTime")
+                    b.Property<DateTime?>("ModifiedTime")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("Modifiedby")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("Modifiedby")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
@@ -155,25 +164,28 @@ namespace PMSIMSWebApi.Migrations
                     b.Property<decimal>("ActualSellingPrice")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("CreatedBy")
-                        .HasColumnType("int");
+                    b.Property<Guid>("CreatedBy")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreationTime")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("DeletedBy")
-                        .HasColumnType("int");
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("DeletedBy")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<DateTime>("ModifiedTime")
+                    b.Property<DateTime?>("ModifiedTime")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("Modifiedby")
-                        .HasColumnType("int");
+                    b.Property<Guid?>("Modifiedby")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("ProductId")
+                    b.Property<Guid>("ProductPriceId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("Quantity")
@@ -191,7 +203,7 @@ namespace PMSIMSWebApi.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ProductId");
+                    b.HasIndex("ProductPriceId");
 
                     b.ToTable("ProductSales");
                 });
@@ -224,13 +236,13 @@ namespace PMSIMSWebApi.Migrations
 
             modelBuilder.Entity("PMSIMSWebApi.Entities.ProductSale", b =>
                 {
-                    b.HasOne("PMSIMSWebApi.Entities.Product", "ProductFK")
+                    b.HasOne("PMSIMSWebApi.Entities.ProductPrice", "ProductPriceFk")
                         .WithMany()
-                        .HasForeignKey("ProductId")
+                        .HasForeignKey("ProductPriceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("ProductFK");
+                    b.Navigation("ProductPriceFk");
                 });
 #pragma warning restore 612, 618
         }

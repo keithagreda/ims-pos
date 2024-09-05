@@ -1,4 +1,5 @@
 ﻿using System.Linq.Dynamic.Core;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using PMSIMSWebApi.Entities;
@@ -24,6 +25,7 @@ namespace POSIMSWebApi.Services
             _productMapper = productMapper;
             _userManager = userManager;
         }
+
 
         public async Task<ApiResponse<IList<ProductDto>>> GetAll(FilterText filter)
         {
@@ -137,16 +139,26 @@ namespace POSIMSWebApi.Services
             };
         }
 
-        public async Task<ApiResponse<ProductDto>> CreateOrEdit(CreateOrEditProductDto input)
+        public async Task<ApiResponse<ProductDto>> CreateOrEdit(CreateOrEditProductDto input, Guid currentUserId)
         {
+            if(currentUserId == Guid.Empty)
+            {
+                return new ApiResponse<ProductDto>()
+                {
+                    Data = new ProductDto(),
+                    IsSuccess = false,
+                    ErrorMessage = "Login is required to create a product."
+                };
+            }
+
             if (input.Id is null)
             {
-                return await CreateProduct(input);
+                return await CreateProduct(input, currentUserId);
             }
-            return await EditProduct(input);
+            return await EditProduct(input, currentUserId);
         }
 
-        private async Task<ApiResponse<ProductDto>> CreateProduct(CreateOrEditProductDto input)
+        private async Task<ApiResponse<ProductDto>> CreateProduct(CreateOrEditProductDto input, Guid currentUserId)
         {
             try
             {
@@ -170,7 +182,7 @@ namespace POSIMSWebApi.Services
                     Id = Guid.NewGuid(),
                     Name = input.Name,
                     CreationTime = DateTime.Now,
-                    CreatedBy = await _userManager.GetUserIdAsync(User)
+                    CreatedBy = currentUserId,
                     Categories = await existingCategories.ToListAsync(), // Use existing categories
                     IsDeleted = false
                 };
@@ -205,7 +217,7 @@ namespace POSIMSWebApi.Services
             }
         }
 
-        private async Task<ApiResponse<ProductDto>> EditProduct(CreateOrEditProductDto input)
+        private async Task<ApiResponse<ProductDto>> EditProduct(CreateOrEditProductDto input, Guid currentUserId)
         {
             if (input.Id is null)
             {
@@ -233,7 +245,8 @@ namespace POSIMSWebApi.Services
             {
                 Id = (Guid)input.Id,
                 Name = input.Name,
-                ModifiedTime = DateTime.Now
+                ModifiedTime = DateTime.Now,
+                Modifiedby = currentUserId
             };
 
             _dbContext.Products.Update(productToBeEdited);

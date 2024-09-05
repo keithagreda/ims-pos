@@ -1,6 +1,10 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using POSIMSWebApi.Auth;
 using POSIMSWebApi.Dtos;
+using POSIMSWebApi.Dtos.AuthDtos;
 using POSIMSWebApi.Dtos.Product;
 using POSIMSWebApi.Interfaces;
 
@@ -11,12 +15,25 @@ namespace POSIMSWebApi.Controllers
     public class ProductController : ControllerBase
     {
         private readonly IProductServices _productServices;
+        private readonly UserManager<ApplicationIdentityUser> _userManager;
 
-        public ProductController(IProductServices productServices)
+        public ProductController(IProductServices productServices, UserManager<ApplicationIdentityUser> userManager)
         {
             _productServices = productServices;
+            _userManager = userManager;
         }
 
+        private async Task<Guid> GetCurrentUser()
+        {
+            var user = await _userManager.GetUserAsync(HttpContext.User);
+            if (user == null) 
+            { 
+                return Guid.Empty;
+            }
+            return Guid.Parse(await _userManager.GetUserIdAsync(user));
+        }
+
+        [Authorize(Roles = "User")]
         [HttpGet("GetProduct")]
         public async Task<ActionResult<ApiResponse<IList<ProductDto>>>> GetAllProducts(
             [FromQuery] FilterText input
@@ -39,7 +56,7 @@ namespace POSIMSWebApi.Controllers
                 );
             }
         }
-
+        [Authorize(Roles = "User")]
         [HttpPost("CreateOrEditProduct")]
         public async Task<ActionResult<ApiResponse<ProductDto>>> CreateOrEditProduct(
             [FromQuery] CreateOrEditProductDto input
@@ -47,7 +64,8 @@ namespace POSIMSWebApi.Controllers
         {
             try
             {
-                var result = await _productServices.CreateOrEdit(input);
+                var userId = await GetCurrentUser();
+                var result = await _productServices.CreateOrEdit(input, userId);
                 return Ok(result);
             }
             catch (Exception ex)

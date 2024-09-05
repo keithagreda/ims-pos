@@ -6,7 +6,7 @@ namespace POSIMSWebApi.Interfaces
 {
     public interface IProductPricesServices
     {
-        Task<ApiResponse<string>> CreateOrEdit(CreateOrEditProductPricesDto input);
+        Task<ApiResponse<string>> CreateOrEdit(CreateOrEditProductPricesDto input, Guid userId);
         Task<ApiResponse<IList<ProductPricesDto>>> GetAllProductPrices(FilterText input);
     }
 }

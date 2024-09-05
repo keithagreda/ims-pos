@@ -41,21 +41,21 @@ namespace PMSIMSWebApi.Entities
         public string SoldTo { get; set; }
         public decimal Quantity { get; set; }
         public decimal TotalProductSales { get; set; }
-        public Guid ProductId { get; set; }
+        public Guid ProductPriceId { get; set; }
 
-        [ForeignKey("ProductId")]
+        [ForeignKey("ProductPriceId")]
         //nav prop
-        public Product ProductFK { get; set; }
+        public ProductPrice ProductPriceFk { get; set; }
     }
 
     public class FullyAudited : ISoftDelete
     {
-        public int CreatedBy { get; set; }
+        public Guid CreatedBy { get; set; }
         public DateTime CreationTime { get; set; }
-        public int? Modifiedby { get; set; }
+        public Guid? Modifiedby { get; set; }
         public DateTime? ModifiedTime { get; set; }
         public bool IsDeleted { get; set; }
-        public int? DeletedBy { get; set; }
+        public Guid? DeletedBy { get; set; }
         public DateTimeOffset? DeletedAt { get; set; }
     }
 }

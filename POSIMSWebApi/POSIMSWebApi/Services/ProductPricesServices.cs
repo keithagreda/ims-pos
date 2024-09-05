@@ -46,7 +46,7 @@ namespace POSIMSWebApi.Services
                 };
             }
 
-            var pagedSort = await data.OrderBy(input.Sorting ?? "CreationTime desc")
+            var pagedSort = await data.OrderBy(input.Sorting ?? "EffectivityDate desc")
                 .Skip((input.Page - 1) * input.ItemsPerPage)
                 .Take(input.ItemsPerPage)
                 .ToListAsync();
@@ -59,30 +59,28 @@ namespace POSIMSWebApi.Services
             };
         }
 
-        public async Task<ApiResponse<string>> CreateOrEdit(CreateOrEditProductPricesDto input)
+        public async Task<ApiResponse<string>> CreateOrEdit(CreateOrEditProductPricesDto input, Guid userId)
         {
             if (input.Price <= 0)
             {
                 return new ApiResponse<string>()
                 {
-                    Data = "Price can't be less than 0",
+                    Data = "Price can't be less than 1",
                     IsSuccess = false,
                     ErrorMessage = "Price Validation Error"
                 };
             }
 
-            if (input.Id is null)
+            if (userId == Guid.Empty)
             {
-                //create
                 return new ApiResponse<string>()
                 {
-                    Data = await CreateProductPrice(input),
-                    IsSuccess = true,
-                    ErrorMessage = ""
+                    Data = "Login is required to create a product.",
+                    IsSuccess = false,
+                    ErrorMessage = "Guid Empty"
                 };
             }
 
-            //edit
             var data = await _dbContext.ProductPrices.FirstOrDefaultAsync(e =>
                 e.ProductId == input.ProductId && e.EffectivityDate.Date == DateTime.Now.Date
             );
@@ -91,28 +89,38 @@ namespace POSIMSWebApi.Services
             {
                 return new ApiResponse<string>()
                 {
-                    Data = await EditProductPrice(input, data),
-                    IsSuccess = false,
+                    Data = await EditProductPrice(input, data, userId),
+                    IsSuccess = true,
+                    ErrorMessage = ""
+                };
+            }
+
+            if (input.Id is null)
+            {
+                return new ApiResponse<string>()
+                {
+                    Data = await CreateProductPrice(input, userId),
+                    IsSuccess = true,
                     ErrorMessage = ""
                 };
             }
 
             return new ApiResponse<string>()
             {
-                Data = await CreateProductPrice(input) + " for today.",
+                Data = await CreateProductPrice(input, userId) + " for today.",
                 IsSuccess = true,
                 ErrorMessage = ""
             };
         }
 
-        private async Task<string> CreateProductPrice(CreateOrEditProductPricesDto input)
+        private async Task<string> CreateProductPrice(CreateOrEditProductPricesDto input, Guid userId)
         {
             ProductPrice res = new ProductPrice()
             {
-                Id = Guid.Empty,
+                Id = Guid.NewGuid(),
                 Price = input.Price,
                 ProductId = input.ProductId,
-                CreatedBy = 1,
+                CreatedBy = userId,
                 CreationTime = DateTime.Now,
                 IsDeleted = false
             };
@@ -124,12 +132,13 @@ namespace POSIMSWebApi.Services
 
         private async Task<string> EditProductPrice(
             CreateOrEditProductPricesDto input,
-            ProductPrice data
+            ProductPrice data,
+            Guid userId
         )
         {
             data.ProductId = input.ProductId;
             data.Price = input.Price;
-            data.Modifiedby = 1;
+            data.Modifiedby = userId;
             data.ModifiedTime = DateTime.Now;
 
             await _dbContext.SaveChangesAsync();
